@@ -19,7 +19,13 @@ namespace PruebaBackend.Models
         public int TipoPermisoId { get; set; }
 
         [Required]
+        public int UsuarioId { get; set; }
+
+        [Required]
         public DateTime FechaPermiso { get; set; }
+
+        [ForeignKey("UsuarioId")]
+        public virtual Usuario Usuario { get; set; } = null!;
 
         [ForeignKey("TipoPermisoId")]
         public virtual TipoPermiso TipoPermiso { get; set; } = null!;
