@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using PruebaBackend.Repositories;
 using PruebaBackend.Models;
 using PruebaBackend.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,11 +18,37 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
+builder.Services.AddIdentity<Usuario, IdentityRole<int>>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+       ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
+builder.Services.AddAuthentication();
+
 builder.Services.AddScoped<IRepository<Permiso>, PermisoRepository>();
 builder.Services.AddScoped<IService<Permiso>, PermisoService>();
 
 builder.Services.AddScoped<IRepository<TipoPermiso>, TipoPermisoRepository>();
 builder.Services.AddScoped<IService<TipoPermiso>, TipoPermisoService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<JwtService>();
 
 builder.Services.AddCors(options =>
 {
@@ -36,6 +66,60 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Inicializacion de roles y usuario admin por defecto
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var userManager = services.GetRequiredService<UserManager<Usuario>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole<int>>>();
+        await InitializeRolesAndAdminUser(userManager, roleManager);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocurrió un error durante la inicialización de la base de datos.");
+    }
+}
+
+// Declaración del método de inicialización
+async Task InitializeRolesAndAdminUser(UserManager<Usuario> userManager, RoleManager<IdentityRole<int>> roleManager)
+{
+    string[] roleNames = { "Administrador", "Empleado" };
+
+    foreach (var roleName in roleNames)
+    {
+        var roleExist = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExist)
+        {
+            await roleManager.CreateAsync(new IdentityRole<int>(roleName));
+        }
+    }
+
+    var adminEmail = "admin@admin.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+    if (adminUser == null)
+    {
+        var newAdminUser = new Usuario()
+        {
+            UserName = "admin", 
+            Email = adminEmail,
+            Nombre = "Admin", 
+            Apellidos = "Del Sistema",
+        };
+
+        var createAdminUser = await userManager.CreateAsync(newAdminUser, "AdminPassword123!");
+
+        if (createAdminUser.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newAdminUser, "Administrador");
+        }
+    }
+}
+// Fin de inicializacion de usuario
 
 if (app.Environment.IsDevelopment())
 {
@@ -72,6 +156,8 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast");
 
 app.UseCors("AllowFrontend");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
@@ -81,3 +167,5 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
+
