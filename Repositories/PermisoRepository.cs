@@ -28,12 +28,12 @@ namespace PruebaBackend.Repositories
 
         public async Task<IEnumerable<Permiso>> GetAllAsync()
         {
-            return await _context.Permisos.Include(p => p.TipoPermiso).ToListAsync();
+            return await _context.Permisos.Include(p => p.TipoPermiso).Include(p => p.UsuarioId).ToListAsync();
         }
 
         public async Task<Permiso> GetByIdAsync(int id)
         {
-            return await _context.Permisos.Include(p => p.TipoPermiso).FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.Permisos.Include(p => p.TipoPermiso).Include(p => p.UsuarioId).FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<bool> SaveChangesAsync()
