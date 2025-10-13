@@ -10,9 +10,6 @@ namespace PruebaBackend.Models
         public string Nombre { get; set; } = null!;
         [Required]
         public string Apellidos { get; set; } = null!;
-        [Required]
-        public int TipoRolId { get; set; }
-
 
         public virtual ICollection<Permiso> Permisos { get; set; } = new List<Permiso>();
     }

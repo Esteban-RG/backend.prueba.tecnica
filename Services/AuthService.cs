@@ -19,23 +19,25 @@ namespace PruebaBackend.Services
             _roleManager = roleManager;
         }
 
-        public async Task<object> Login(AuthRequests.Login request)
+        public async Task<AuthResult> Login(AuthDTO.Login request)
         {
             var user = await _userManager.FindByEmailAsync(request.email);
             if (user != null && await _userManager.CheckPasswordAsync(user, request.Password))
             {
                 var userRoles = await _userManager.GetRolesAsync(user);
-                return _jwtService.GenerateToken(user, userRoles);
+                var token = _jwtService.GenerateToken(user, userRoles);
+
+                return AuthResult.Success(token);
             }
-            return null;
+            return AuthResult.Failure(new[] { "Credenciales inválidas" });
         }
 
-        public async Task<object> Register(AuthRequests.Register request)
+        public async Task<AuthResult> Register(AuthDTO.Register request)
         {
             var userExists = await _userManager.FindByNameAsync(request.Username);
             if (userExists != null)
             {
-                return IdentityResult.Failed(new IdentityError { Description = "El usuario ya existe!" });
+                return AuthResult.Failure( new[] {"El usuario ya existe."} );
             }
 
             Usuario user = new Usuario()
@@ -51,7 +53,8 @@ namespace PruebaBackend.Services
 
             if (!result.Succeeded)
             {
-                return result;
+                var errors = result.Errors.Select(e => e.Description);
+                return AuthResult.Failure(errors);
             }
 
             
@@ -61,7 +64,9 @@ namespace PruebaBackend.Services
             await _userManager.AddToRoleAsync(user, "Empleado");
 
             var userRoles = await _userManager.GetRolesAsync(user);
-            return _jwtService.GenerateToken(user, userRoles);
+            var token = _jwtService.GenerateToken(user, userRoles);
+
+            return AuthResult.Success(token);
         }
     }
 }

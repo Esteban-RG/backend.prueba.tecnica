@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PruebaBackend.DTOs;
 using PruebaBackend.Models;
 using PruebaBackend.Services;
 
 
 [ApiController]
+[Authorize(Roles = "Administrador")]
 [Route("api/[controller]")]
 public class TipoPermisoController : ControllerBase
 {

@@ -16,33 +16,28 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] AuthRequests.Login request)
+    public async Task<IActionResult> Login([FromBody] AuthDTO.Login request)
     {
         var result = await _authService.Login(request);
-        if (result != null)
+        if (result.Succeeded)
         {
-            return Ok(result);
+            return Ok(new { token = result.Token});
         }
-        return Unauthorized();
+        return BadRequest(new { message = result.Errors });
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] AuthRequests.Register request)
+    public async Task<IActionResult> Register([FromBody] AuthDTO.Register request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
 
         var result = await _authService.Register(request);
 
-        if (result is IdentityResult identityResult && !identityResult.Succeeded)
+        if (result.Succeeded)
         {
-            var errorMsg = identityResult.Errors.FirstOrDefault()?.Description ?? "¡La creación del usuario falló! Por favor, revisa los detalles del usuario y vuelve a intentarlo.";
-            return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = errorMsg });
+            return Ok(new { token = result.Token });
         }
 
-        return Ok(result);
+        return BadRequest(new { message = result.Errors });
     }
 }
 

@@ -1,11 +1,12 @@
-using PruebaBackend.Data;
-using Microsoft.EntityFrameworkCore;
-using PruebaBackend.Repositories;
-using PruebaBackend.Models;
-using PruebaBackend.Services;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using PruebaBackend.Data;
+using PruebaBackend.Models;
+using PruebaBackend.Repositories;
+using PruebaBackend.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,7 +64,32 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Ingresa el token Bearer de la siguiente manera: `Bearer {token}`",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey, 
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 var app = builder.Build();
 

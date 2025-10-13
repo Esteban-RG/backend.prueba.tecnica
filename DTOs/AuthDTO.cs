@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.Identity.Client;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace PruebaBackend.DTOs
 {
-    public class AuthRequests
+    public class AuthDTO
     {
         public record Login(
             [Required] string email,

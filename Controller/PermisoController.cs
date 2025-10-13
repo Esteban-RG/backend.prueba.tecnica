@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PruebaBackend.DTOs;
 using PruebaBackend.Models;
 using PruebaBackend.Services;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -64,5 +66,15 @@ public class PermisoController : ControllerBase
         if (!result) return NotFound();
 
         return NoContent();
+    }
+
+
+    [HttpGet("MisPermisos")]
+    [Authorize]
+    public void GetMisPermisos()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        
     }
 }
