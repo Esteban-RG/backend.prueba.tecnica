@@ -18,8 +18,7 @@ namespace PruebaBackend.Models
         [Required]
         public int TipoPermisoId { get; set; }
 
-        [Required]
-        public int UsuarioId { get; set; }
+        public int? UsuarioId { get; set; }
 
         [Required]
         public DateTime FechaPermiso { get; set; }

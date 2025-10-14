@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PruebaBackend.Data;
 
@@ -11,9 +12,11 @@ using PruebaBackend.Data;
 namespace PruebaBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251014011918_add nullable UsuarioId")]
+    partial class addnullableUsuarioId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -186,7 +189,7 @@ namespace PruebaBackend.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Permisos", (string)null);
+                    b.ToTable("Permisos");
                 });
 
             modelBuilder.Entity("PruebaBackend.Models.TipoPermiso", b =>
@@ -203,7 +206,7 @@ namespace PruebaBackend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TipoPermisos", (string)null);
+                    b.ToTable("TipoPermisos");
 
                     b.HasData(
                         new
