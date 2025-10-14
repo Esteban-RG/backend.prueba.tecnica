@@ -15,7 +15,7 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    [HttpPost("login")]
+    [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] AuthDTO.Login request)
     {
         var result = await _authService.Login(request);
@@ -26,7 +26,7 @@ public class AuthController : ControllerBase
         return BadRequest(new { message = result.Errors });
     }
 
-    [HttpPost("register")]
+    [HttpPost("Register")]
     public async Task<IActionResult> Register([FromBody] AuthDTO.Register request)
     {
 
