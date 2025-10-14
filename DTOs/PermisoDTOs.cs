@@ -16,7 +16,9 @@ namespace PruebaBackend.DTOs
             [Required] string Nombre,
             [Required] string Apellidos,
             [Required] TipoPermisoDTOs.TipoPermisoDTO TipoPermiso,
-            [Required] DateTime Fecha
+            [Required] DateTime Fecha,
+            UsuarioDTOs.UsuarioInfo? Usuario = null
+
             );
 
         //Mappers
@@ -26,8 +28,8 @@ namespace PruebaBackend.DTOs
             permiso.NombreEmpleado,
             permiso.ApellidosEmpleado,
             TipoPermisoDTOs.FromModel(permiso.TipoPermiso),
-            permiso.FechaPermiso
-            ); 
+            permiso.FechaPermiso,
+            permiso.Usuario != null ? UsuarioDTOs.FromModel(permiso.Usuario) : null); 
 
         public static Permiso ToModel(NewPermiso newPermiso) => new Permiso
         {
