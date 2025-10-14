@@ -44,10 +44,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthentication();
 
 builder.Services.AddScoped<IRepository<Permiso>, PermisoRepository>();
-builder.Services.AddScoped<IService<Permiso>, PermisoService>();
-
 builder.Services.AddScoped<IRepository<TipoPermiso>, TipoPermisoRepository>();
-builder.Services.AddScoped<IService<TipoPermiso>, TipoPermisoService>();
+
+builder.Services.AddScoped<PermisoService>();
+builder.Services.AddScoped<TipoPermisoService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<JwtService>();
 

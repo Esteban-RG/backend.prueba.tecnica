@@ -28,7 +28,7 @@ namespace PruebaBackend.Repositories
 
         public async Task<IEnumerable<Permiso>> GetAllAsync()
         {
-            return await _context.Permisos.Include(p => p.TipoPermiso).Include(p => p.UsuarioId).ToListAsync();
+            return await _context.Permisos.Include(p => p.TipoPermiso).Include(p => p.Usuario).ToListAsync();
         }
 
         public async Task<Permiso> GetByIdAsync(int id)

@@ -3,7 +3,7 @@ using PruebaBackend.Repositories;
 
 namespace PruebaBackend.Services
 {
-    public class PermisoService : IService<Permiso>
+    public class PermisoService
     {
         private readonly IRepository<Permiso> _permisoRepository;
 
@@ -12,14 +12,14 @@ namespace PruebaBackend.Services
             _permisoRepository = permisoRepository;
         }
 
-        public async Task<Permiso> CreatePermisoAsync(Permiso permiso)
+        public async Task<Permiso> CreateAsync(Permiso permiso)
         {
             await _permisoRepository.AddAsync(permiso);
             await _permisoRepository.SaveChangesAsync();
             return permiso;
         }
 
-        public async Task<bool> DeletePermisoAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var permiso = await _permisoRepository.GetByIdAsync(id);
             if (permiso == null) return false;
@@ -28,17 +28,23 @@ namespace PruebaBackend.Services
             return await _permisoRepository.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Permiso>> GetAllPermisosAsync()
+        public async Task<IEnumerable<Permiso>> GetAllAsync()
         {
             return await _permisoRepository.GetAllAsync();
         }
 
-        public async Task<Permiso> GetPermisoByIdAsync(int id)
+        public async Task<IEnumerable<Permiso>> GetMyAsync(int usuarioId)
+        {
+            var allPermisos = await _permisoRepository.GetAllAsync();
+            return allPermisos.Where(p => p.UsuarioId == usuarioId);
+        }
+
+        public async Task<Permiso> GetByIdAsync(int id)
         {
             return await _permisoRepository.GetByIdAsync(id);
         }
 
-        public async Task<bool> UpdatePermisoAsync(Permiso permiso)
+        public async Task<bool> UpdateAsync(Permiso permiso)
         {
             var existingPermiso = await _permisoRepository.GetByIdAsync(permiso.Id);
             if (existingPermiso == null) return false;
@@ -50,5 +56,7 @@ namespace PruebaBackend.Services
 
             return await _permisoRepository.SaveChangesAsync();
         }
+
+        
     }
 }
