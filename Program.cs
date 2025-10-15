@@ -113,7 +113,7 @@ using (var scope = app.Services.CreateScope())
 // Declaración del método de inicialización
 async Task InitializeRolesAndAdminUser(UserManager<Usuario> userManager, RoleManager<IdentityRole<int>> roleManager)
 {
-    string[] roleNames = { "Administrador", "Empleado" };
+    string[] roleNames = { "Administrador", "Empleado", "Supervisor" };
 
     foreach (var roleName in roleNames)
     {
@@ -142,6 +142,7 @@ async Task InitializeRolesAndAdminUser(UserManager<Usuario> userManager, RoleMan
         if (createAdminUser.Succeeded)
         {
             await userManager.AddToRoleAsync(newAdminUser, "Administrador");
+            await userManager.AddToRoleAsync(newAdminUser, "Supervisor");
         }
     }
 }
