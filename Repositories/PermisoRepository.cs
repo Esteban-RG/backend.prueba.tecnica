@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PruebaBackend.Data;
 using PruebaBackend.Models;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace PruebaBackend.Repositories
@@ -10,10 +11,12 @@ namespace PruebaBackend.Repositories
     public class PermisoRepository : IRepository<Permiso>
     {
         private readonly ApplicationDbContext _context;
-        
+        private readonly DbSet<Permiso> _dbSet;
+
         public PermisoRepository(ApplicationDbContext context)
         {
             _context = context;
+            _dbSet = context.Set<Permiso>();
         }
 
         public async Task AddAsync(Permiso permiso)
@@ -26,14 +29,19 @@ namespace PruebaBackend.Repositories
             _context.Permisos.Remove(permiso);
         }
 
+        public async Task<IEnumerable<Permiso>> FindAsync(Expression<Func<Permiso, bool>> predicate)
+        {
+            return await _dbSet.Where(predicate).Include(p => p.EstatusPermiso).Include(p => p.TipoPermiso).Include(p => p.Usuario).ToListAsync();
+        }
+
         public async Task<IEnumerable<Permiso>> GetAllAsync()
         {
-            return await _context.Permisos.Include(p => p.TipoPermiso).Include(p => p.Usuario).ToListAsync();
+            return await _context.Permisos.Include(p => p.EstatusPermiso).Include(p => p.TipoPermiso).Include(p => p.Usuario).ToListAsync();
         }
 
         public async Task<Permiso> GetByIdAsync(int id)
         {
-            return await _context.Permisos.Include(p => p.TipoPermiso).Include(p => p.UsuarioId).FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.Permisos.Include(p => p.EstatusPermiso).Include(p => p.TipoPermiso).Include(p => p.Usuario).FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<bool> SaveChangesAsync()
