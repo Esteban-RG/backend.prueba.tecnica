@@ -10,9 +10,10 @@ namespace PruebaBackend.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-
-        public DbSet<Permiso> Permisos { get; set; }
+        
+        public DbSet<EstatusPermiso> EstatusPermisos { get; set; }
         public DbSet<TipoPermiso> TipoPermisos { get; set; }
+        public DbSet<Permiso> Permisos { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
 
 
@@ -26,7 +27,12 @@ namespace PruebaBackend.Data
                 new TipoPermiso { Id = 3, Descripcion = "Otros" }
             );
 
-            
+            modelBuilder.Entity<EstatusPermiso>().HasData(
+                new EstatusPermiso { IdEstatusPermiso = 1, Descripcion = "Pendiente", Activo = true },
+                new EstatusPermiso { IdEstatusPermiso = 2, Descripcion = "Aprobado", Activo = true },
+                new EstatusPermiso { IdEstatusPermiso = 3, Descripcion = "Rechazado", Activo = true }
+            );
+
         }
     }
 }
