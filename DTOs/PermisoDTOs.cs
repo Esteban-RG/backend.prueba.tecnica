@@ -6,19 +6,23 @@ namespace PruebaBackend.DTOs
     public class PermisoDTOs
     {
         public record NewPermiso(
-            [Required] string Nombre,
-            [Required] string Apellidos,
             [Required] int IdTipoPermiso,
-            [Required] DateTime Fecha
+            [Required] DateTime FechaPermiso
             );
         public record PermisoDTO(
-            [Required] int Id,
-            [Required] string Nombre,
-            [Required] string Apellidos,
-            [Required] TipoPermisoDTOs.TipoPermisoDTO TipoPermiso,
-            [Required] DateTime Fecha,
-            UsuarioDTOs.UsuarioInfo? Usuario = null
+            int Id,
+            string NombreEmpleado,
+            string ApellidosEmpleado,
+            TipoPermisoDTOs.TipoPermisoDTO TipoPermiso,
+            DateTime FechaPermiso,
+            EstatusPermisoDTOs.EstatusPermisoDTO EstatusPermiso,
+            UsuarioDTOs.UsuarioInfo? Usuario = null,
+            string? ComentariosSupervisor = null,
+            DateTime? FechaRevision = null
+            );
 
+        public record ApproveStatusDTO(
+            string? ComentariosSupervisor = null
             );
 
         //Mappers
@@ -27,25 +31,32 @@ namespace PruebaBackend.DTOs
             permiso.Id,
             permiso.NombreEmpleado,
             permiso.ApellidosEmpleado,
-            TipoPermisoDTOs.FromModel(permiso.TipoPermiso),
+            TipoPermisoDTOs.FromModel(permiso.TipoPermiso!),
             permiso.FechaPermiso,
-            permiso.Usuario != null ? UsuarioDTOs.FromModel(permiso.Usuario) : null); 
+            EstatusPermisoDTOs.FromModel(permiso.EstatusPermiso!),
+            permiso.Usuario != null ? UsuarioDTOs.FromModel(permiso.Usuario) : null,
+            permiso.ComentariosSupervisor,
+            permiso.FechaRevision
+            );
+
 
         public static Permiso ToModel(NewPermiso newPermiso) => new Permiso
         {
-            NombreEmpleado = newPermiso.Nombre,
-            ApellidosEmpleado = newPermiso.Apellidos,
             TipoPermisoId = newPermiso.IdTipoPermiso,
-            FechaPermiso = newPermiso.Fecha
+            FechaPermiso = newPermiso.FechaPermiso
         };
 
-        public static Permiso ToModel(PermisoDTO permisoDTO) => new Permiso
+        public static Permiso ToModel(PermisoDTO dto) => new Permiso
         {
-            Id = permisoDTO.Id,
-            NombreEmpleado = permisoDTO.Nombre,
-            ApellidosEmpleado = permisoDTO.Apellidos,
-            TipoPermisoId = permisoDTO.TipoPermiso.Id,
-            FechaPermiso = permisoDTO.Fecha
+            Id = dto.Id,
+            NombreEmpleado = dto.NombreEmpleado,
+            ApellidosEmpleado = dto.ApellidosEmpleado,
+            IdEstatusPermiso = dto.EstatusPermiso.Id,
+            TipoPermisoId = dto.TipoPermiso.Id,
+            FechaPermiso = dto.FechaPermiso,
+            ComentariosSupervisor = dto.ComentariosSupervisor,
+            UsuarioId = dto.Usuario.Id,
+            FechaRevision = dto.FechaRevision
         };
     }
 }
