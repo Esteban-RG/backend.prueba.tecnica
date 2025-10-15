@@ -18,6 +18,13 @@ namespace PruebaBackend.Models
         [Required]
         public int TipoPermisoId { get; set; }
 
+        [Required]
+        public int IdEstatusPermiso { get; set; } = 1;
+
+        public string? ComentariosSupervisor { get; set; }
+
+        public DateTime? FechaRevision { get; set; }
+
         public int? UsuarioId { get; set; }
 
         [Required]
@@ -28,5 +35,8 @@ namespace PruebaBackend.Models
 
         [ForeignKey("TipoPermisoId")]
         public virtual TipoPermiso TipoPermiso { get; set; } = null!;
+
+        [ForeignKey("IdEstatusPermiso")]
+        public virtual EstatusPermiso EstatusPermiso { get; set; } = null!;
     }
 }
