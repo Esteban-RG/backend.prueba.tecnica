@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PruebaBackend.DTOs;
 using PruebaBackend.Models;
 using PruebaBackend.Services;
 using System.Security.Claims;
+using static PruebaBackend.DTOs.PermisoDTOs;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -20,26 +22,37 @@ public class PermisoController : ControllerBase
     [Authorize]
     public async Task<ActionResult<IEnumerable<PermisoDTOs.PermisoDTO>>> GetAll()
     {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
-
-        IEnumerable<PermisoDTOs.PermisoDTO> permisosDTOs = Enumerable.Empty<PermisoDTOs.PermisoDTO>();
-        if (roles.Contains("Administrador"))
-        {
-            var permisos = await _permisoService.GetAllAsync();
-            permisosDTOs = permisos.Select(PermisoDTOs.FromModel);
-        }
-        else if (roles.Contains("Empleado"))
-        {
-            var permisos = await _permisoService.GetMyAsync(userId);
-            permisosDTOs = permisos.Select(PermisoDTOs.FromModel);
-        }
+       
+        var permisos = await _permisoService.GetAllAsync();
+        var permisosDTOs = permisos.Select(PermisoDTOs.FromModel);
 
         return Ok(permisosDTOs);
     }
 
+    [HttpGet("MisPermisos")]
+    [Authorize]
+    public async Task<ActionResult<IEnumerable<PermisoDTOs.PermisoDTO>>> GetMy()
+    {
+
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var permisos = await _permisoService.GetMyAsync(userId);
+        var permisosDTOs = permisos.Select(PermisoDTOs.FromModel);
+
+        return Ok(permisosDTOs);
+    }
+
+    [HttpGet("EstatusPendiente")]
+    [Authorize(Roles = "Administrador, Supervisor")]
+    public async Task<ActionResult<IEnumerable<PermisoDTOs.PermisoDTO>>> GetPendientes()
+    {
+        var permisos = await _permisoService.GetPendientesAsync();
+        var permisosDTOs = permisos.Select(PermisoDTOs.FromModel);
+        return Ok(permisosDTOs);
+    }
+
+
     [HttpGet("{id}")]
-    [Authorize(Roles = "Administrador")]
+    [Authorize(Roles = "Supervisor")]
     public async Task<IActionResult> GetById(int id)
     {
         var permiso = await _permisoService.GetByIdAsync(id);
@@ -49,14 +62,16 @@ public class PermisoController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Administrador")]
+    [Authorize]
     public async Task<IActionResult> Create(PermisoDTOs.NewPermiso newPermiso)
     {
         try
         {
-            var permiso = PermisoDTOs.ToModel(newPermiso);
-            var nuevoPermiso = await _permisoService.CreateAsync(permiso);
-            return CreatedAtAction(nameof(GetById), new { id = nuevoPermiso.Id }, nuevoPermiso);
+            var idUsuario = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var nuevoPermiso = await _permisoService.CreateAsync(newPermiso, idUsuario);
+            var permisoDTO = PermisoDTOs.FromModel(nuevoPermiso);
+
+            return CreatedAtAction(nameof(GetById), new { id = permisoDTO.Id }, permisoDTO);
         }
         catch (ArgumentException ex)
         {
@@ -64,17 +79,33 @@ public class PermisoController : ControllerBase
         }
     }
 
-    [HttpPut("{id}")]
-    [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> Update(PermisoDTOs.NewPermiso permisoDTO, int id)
+    [HttpPatch("Aprobar/{id}")]
+    [Authorize(Roles = "Supervisor")]
+    public async Task<IActionResult> Approve(int id)
     {
-        var permiso = PermisoDTOs.ToModel(permisoDTO);
-        permiso.Id = id;
-        var result = await _permisoService.UpdateAsync(permiso);
+        var result = await _permisoService.ApproveAsync(id);
         if (!result) return NotFound();
-
-        return NoContent(); 
+        return NoContent();
     }
+
+    [HttpPatch("Rechazar/{id}")]
+    [Authorize(Roles = "Administrador, Supervisor")]
+    public async Task<IActionResult> Deny(int id, [FromBody] PermisoDTOs.ApproveStatusDTO dto)
+    {
+        var result = await _permisoService.DenyAsync(id, dto.ComentariosSupervisor);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+
+    [HttpPatch("{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Update(PermisoDTOs.PermisoDTO dto)
+    {
+        var result = await _permisoService.UpdateAsync(dto);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+    
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Administrador")]
