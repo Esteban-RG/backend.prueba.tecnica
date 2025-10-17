@@ -1,6 +1,8 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PruebaBackend.DTOs;
+using PruebaBackend.Services;
 using System.Security.Claims;
 
 
@@ -8,42 +10,34 @@ using System.Security.Claims;
 [Route("api/[controller]")]
 public class UserController : ControllerBase
 {
-    [HttpGet("Session")]
-    [Authorize]
-    public IActionResult GetMisPermisos()
+    private readonly UserService _userService;
+    
+    public UserController(UserService userService)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var username = User.FindFirstValue(ClaimTypes.Name);
-        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value)
-                         .ToList();
-
-        return Ok(new
-        {
-            id = userId,
-            username = username,
-            roles = roles
-        });
+        _userService = userService;
     }
 
-    [HttpGet("isAdmin")]
+    [HttpGet]
     [Authorize(Roles = "Administrador")]
-    public IActionResult isAdmin()
+    public async Task<ActionResult<IEnumerable<UsuarioDTOs.UsuarioInfo>>> GetAllUsers()
     {
-        return Ok(new
-        {
-            message = "true"
-        });
+        var users = await _userService.GetAllUsersAsync();
+        return Ok(users);
     }
 
-    [HttpGet("isEmp")]
-    [Authorize(Roles = "Empleado")]
-    public IActionResult isEmployee()
+    [HttpGet("{id}")]   
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult<UsuarioDTOs.UsuarioInfo>> GetUserById(int id)
     {
-        return Ok(new
+        var user = await _userService.GetUserByIdAsync(id);
+        if (user == null)
         {
-            message = "true"
-        });
+            return NotFound();
+        }
+        return Ok(user);
     }
+
+
 
 }
 

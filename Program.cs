@@ -46,6 +46,7 @@ builder.Services.AddAuthentication();
 builder.Services.AddScoped<IRepository<Permiso>, PermisoRepository>();
 builder.Services.AddScoped<IRepository<TipoPermiso>, TipoPermisoRepository>();
 
+builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<PermisoService>();
 builder.Services.AddScoped<TipoPermisoService>();
 builder.Services.AddScoped<AuthService>();
