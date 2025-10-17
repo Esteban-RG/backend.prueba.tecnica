@@ -5,10 +5,19 @@ namespace PruebaBackend.DTOs
 {
     public class PermisoDTOs
     {
-        public record NewPermiso(
+        public record NewSolicitud(
             [Required] int IdTipoPermiso,
             [Required] DateTime FechaPermiso
             );
+
+        public record NewPermiso(
+            [Required] string NombreEmpleado,
+            [Required] string ApellidosEmpleado,
+            int? UsuarioId,
+            [Required] int IdTipoPermiso,
+            [Required] DateTime FechaPermiso
+            );
+
         public record PermisoDTO(
             int Id,
             string NombreEmpleado,
@@ -40,12 +49,6 @@ namespace PruebaBackend.DTOs
             );
 
 
-        public static Permiso ToModel(NewPermiso newPermiso) => new Permiso
-        {
-            TipoPermisoId = newPermiso.IdTipoPermiso,
-            FechaPermiso = newPermiso.FechaPermiso
-        };
-
         public static Permiso ToModel(PermisoDTO dto) => new Permiso
         {
             Id = dto.Id,
@@ -58,5 +61,24 @@ namespace PruebaBackend.DTOs
             UsuarioId = dto.Usuario.Id,
             FechaRevision = dto.FechaRevision
         };
+
+        public static Permiso ToModel(NewPermiso dto) => new Permiso
+        {
+            NombreEmpleado = dto.NombreEmpleado,
+            ApellidosEmpleado = dto.ApellidosEmpleado,
+            UsuarioId = dto.UsuarioId,
+            TipoPermisoId = dto.IdTipoPermiso,
+            FechaPermiso = dto.FechaPermiso,
+            IdEstatusPermiso = 1 
+        };
+
+        public static NewPermiso ToNewPermiso(NewSolicitud solicitud, Usuario usuario) => new NewPermiso(
+            NombreEmpleado: usuario.Nombre,
+            ApellidosEmpleado: usuario.Apellidos,
+            UsuarioId: usuario.Id,
+            IdTipoPermiso: solicitud.IdTipoPermiso,
+            FechaPermiso: solicitud.FechaPermiso
+            );
+
     }
 }

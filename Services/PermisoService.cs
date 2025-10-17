@@ -20,23 +20,18 @@ namespace PruebaBackend.Services
             _userManager = userManager;
         }
 
-        public async Task<Permiso> CreateAsync(PermisoDTOs.NewPermiso newPermiso, int idUsuario)
+        public async Task<Permiso> CreateAsync(PermisoDTOs.NewPermiso newPermiso)
         {
-            var usuario = _userManager.Users.FirstOrDefault(u => u.Id == idUsuario);
-            if (usuario == null)
-            {
-                throw new ArgumentException("Usuario no encontrado");
+            if (newPermiso.UsuarioId != null) {
+                var usuario = _userManager.Users.FirstOrDefault(u => u.Id == newPermiso.UsuarioId);
             }
 
             var permiso = PermisoDTOs.ToModel(newPermiso);
 
-            permiso.UsuarioId = idUsuario;
-            permiso.NombreEmpleado = usuario.Nombre;
-            permiso.ApellidosEmpleado = usuario.Apellidos;
-
             await _permisoRepository.AddAsync(permiso);
             await _permisoRepository.SaveChangesAsync();
-            permiso = await _permisoRepository.GetByIdAsync(permiso.Id); 
+
+            permiso = await _permisoRepository.GetByIdAsync(permiso.Id);
 
             return permiso;
         }
@@ -78,7 +73,7 @@ namespace PruebaBackend.Services
             if (existingPermiso == null) return false;
 
             existingPermiso = PermisoDTOs.ToModel(dto);
-            
+
             return await _permisoRepository.SaveChangesAsync();
         }
 
@@ -99,6 +94,27 @@ namespace PruebaBackend.Services
             permiso.ComentariosSupervisor = comment;
             permiso.FechaRevision = DateTime.UtcNow;
             return await _permisoRepository.SaveChangesAsync();
+        }
+
+        internal async Task<IEnumerable<Permiso>> SearchPermisosAsync(int? tipoPermisoId, int? idEstatusPermiso)
+        {
+            if (tipoPermisoId == 0 && idEstatusPermiso == 0)
+            {
+                return await _permisoRepository.GetAllAsync();
+            }
+
+            if (tipoPermisoId != 0 && idEstatusPermiso == 0)
+            {
+                return await _permisoRepository.FindAsync(p => p.TipoPermisoId == tipoPermisoId);
+            }
+            else if (tipoPermisoId == 0 && idEstatusPermiso != 0)
+            {
+                return await _permisoRepository.FindAsync(p => p.IdEstatusPermiso == idEstatusPermiso);
+            }
+            else 
+            { 
+                return await _permisoRepository.FindAsync(p => p.TipoPermisoId == tipoPermisoId && p.IdEstatusPermiso == idEstatusPermiso);
+            }
         }
     }
 }
